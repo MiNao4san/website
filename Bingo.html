@@ -1,0 +1,170 @@
+<!-- ビンゴをHTML1ファイルでつくって by OpenAI API -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ビンゴゲーム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f2f2f2;
+            /*font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;*/
+}
+
+        .container {
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 40px;
+        }
+        .result {
+            font-size: 48px;
+            margin-top: 20px;
+            color: #333;
+            text-align: center
+        }
+        .countnumber {
+            font-size: 48px;
+            margin-top: 20px;
+            color: #333;
+            text-align: center
+}
+
+        table {
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            border: 1px solid #333;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        td.selected {
+            background-color: #4caf50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ビンゴゲーム</h1>
+    <table id="bingoCard"></table>
+    <button onclick="generateBingoCard()">ビンゴカードを生成</button>
+    <div id="announcement"></div>
+    <div class="container">
+        <button onclick="rollDice()">番号抽選</button>
+        <div id="result" class="result">?</div>
+        <div id="countnumber" class="countnumber" ></div>
+    </div>
+
+    <script>
+        const CARD_SIZE = 5;
+        var countnumber = 0;
+
+        function generateBingoCard() {
+            const numbers = [];
+            for (let i = 1; i <= 75; i++) {
+                numbers.push(i);
+            }
+            numbers.sort(() => Math.random() - 0.5);
+
+            const table = document.getElementById('bingoCard');
+            table.innerHTML = '';
+
+            let numberIndex = 0;
+            for (let row = 0; row < CARD_SIZE; row++) {
+                const tr = document.createElement('tr');
+                for (let col = 0; col < CARD_SIZE; col++) {
+                    const td = document.createElement('td');
+                    if (row === 2 && col === 2) {
+                        td.innerText = 'FREE';
+                    } else {
+                        td.innerText = numbers[numberIndex++];
+                    }
+                    td.onclick = function() {
+                        td.classList.toggle('selected');
+                        checkBingo();
+                    };
+                    tr.appendChild(td);
+                }
+                table.appendChild(tr);
+            }
+        }
+
+        function checkBingo() {
+            const rows = document.querySelectorAll('#bingoCard tr');
+            let isBingo = false;
+
+            // Check rows
+            for (let i = 0; i < CARD_SIZE; i++) {
+                if (Array.from(rows[i].children).every(td => td.classList.contains('selected'))) {
+                    isBingo = true;
+                }
+            }
+
+            // Check columns
+            for (let i = 0; i < CARD_SIZE; i++) {
+                let colSelected = true;
+                for (let j = 0; j < CARD_SIZE; j++) {
+                    if (!rows[j].children[i].classList.contains('selected')) {
+                        colSelected = false;
+                        break;
+                    }
+                }
+                if (colSelected) isBingo = true;
+            }
+
+            // Check diagonals
+            let diagonal1Selected = true;
+            let diagonal2Selected = true;
+            for (let i = 0; i < CARD_SIZE; i++) {
+                if (!rows[i].children[i].classList.contains('selected')) {
+                    diagonal1Selected = false;
+                }
+                if (!rows[i].children[CARD_SIZE - i - 1].classList.contains('selected')) {
+                    diagonal2Selected = false;
+                }
+            }
+
+            if (diagonal1Selected || diagonal2Selected) isBingo = true;
+
+            // Display results
+            const announcement = document.getElementById('announcement');
+            if (isBingo) {
+                announcement.innerText = 'ビンゴ!';
+            } else {
+                announcement.innerText = '';
+            }
+        }
+        function rollDice() {
+            countnumber++;
+            const result = Math.floor(Math.random() * 75) + 1;
+            document.getElementById('result').textContent = result;
+            
+            document.getElementById('countnumber').textContent = "抽選回数：" + countnumber + "回目";
+            console.log(countnumber);
+        }
+        // 初期カード生成
+        generateBingoCard();
+    </script>
+</body>
+</html>
